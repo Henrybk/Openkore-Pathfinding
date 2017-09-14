@@ -188,7 +188,6 @@ void reajustOpenListItem (TypeList* openList, Node* infoAdress, int openListSize
 
 Node* openListGetLowest (TypeList* openList, Map* currentMap, int openListSize)
 {
-    printf("Now starting openListGetLowest %d\n", openList[0].f);
     Node* lowestNode = &currentMap->grid[openList[0].x][openList[0].y].nodeInfo;
     openList[0] = openList[openListSize-1];
     currentMap->grid[openList[0].x][openList[0].y].nodeInfo.openListIndex = 0;
@@ -226,20 +225,16 @@ Node* openListGetLowest (TypeList* openList, Map* currentMap, int openListSize)
 void reconstruct_path(Map* currentMap, Node* startNode, Node* currentNode)
 {
 	int i = 0;
-	printf("Building Path from %d-%d to %d-%d\n", currentNode->x, currentNode->y, startNode->x, startNode->y);
 	while (currentNode->x != startNode->x || currentNode->y != startNode->y)
     {
-        printf("Step %d : %d-%d\n", i, currentNode->x, currentNode->y);
         currentMap->grid[currentNode->parentX][currentNode->parentY].nodeInfo.whichlist = PATH;
         currentNode = &currentMap->grid[currentNode->parentX][currentNode->parentY].nodeInfo;
         i++;
     }
-    printf("Destination reached at step %d\n", i);
 }
 
 void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
 {
-    printf("We have to go from %d-%d to %d-%d\n", startNode->x, startNode->y, goalNode->x, goalNode->y);
     int size = currentMap->height * currentMap->width;
     int openListSize = 1;
     int Gscore = 0;
@@ -257,8 +252,6 @@ void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
         //get lowest F score member of openlist and delete it from it
         currentNode = openListGetLowest (openList, currentMap, openListSize);
         openListSize--;
-        printf("We are at %d-%d\n", currentNode->x, currentNode->y);
-        printf("Now openlist is %d nodes long\n", openListSize);
 
         //add currentNode to closedList
         currentNode->whichlist = CLOSED;
@@ -266,7 +259,6 @@ void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
 		//if current is the goal, return the path.
 		if (currentNode->x == goalNode->x && currentNode->y == goalNode->y) {
             //return path
-            printf("OVER\n");
             reconstruct_path(currentMap, startNode, currentNode);
 			break;
 		}
@@ -278,14 +270,12 @@ void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
 		organizeNeighborsStruct(currentNeighbors, currentNode, currentMap);
 		for (indexNeighbor = 0; indexNeighbor < currentNeighbors->count; indexNeighbor++) {
             infoAdress = &currentMap->grid[currentNeighbors->neighborNodes[indexNeighbor].x][currentNeighbors->neighborNodes[indexNeighbor].y].nodeInfo;
-            printf("Checking neighbor of %d-%d at location %d-%d\n", currentNode->x, currentNode->y, currentNeighbors->neighborNodes[indexNeighbor].x, currentNeighbors->neighborNodes[indexNeighbor].y);
 			nodeList = infoAdress->whichlist;
 			if (nodeList == CLOSED) { continue; }
 
 			Gscore = currentNode->g + currentNeighbors->neighborNodes[indexNeighbor].distanceFromCurrent;
 
 			if (nodeList != OPEN) {
-                printf("Adding node to Openlist\n");
                 infoAdress->x = currentNeighbors->neighborNodes[indexNeighbor].x;
                 infoAdress->y = currentNeighbors->neighborNodes[indexNeighbor].y;
                 infoAdress->parentX = currentNode->x;
@@ -296,10 +286,8 @@ void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
                 infoAdress->f = Gscore + infoAdress->h;
 				openListAdd (openList, infoAdress, openListSize, currentMap);
 				openListSize++;
-                printf("Now openlist is %d nodes long\n", openListSize);
 			} else {
                 if (Gscore < infoAdress->g) {
-                    printf("Reajusting node on Openlist\n");
                     infoAdress->parentX = currentNode->x;
                     infoAdress->parentY = currentNode->y;
                     infoAdress->g = Gscore;
@@ -309,7 +297,6 @@ void Pathfind (Node* startNode, Node* goalNode, Map* currentMap)
 			}
 		}
 	}
-	printf("After While\n");
     free(openList);
 }
 
@@ -343,11 +330,11 @@ int main(){
 	Map* currentMap = GenerateMap("maps\\hugel.fld2");
 	int startX = 83;
 	int startY = 57;
+	int endX = 211;
+	int endY = 234;
 	currentMap->grid[startX][startY].nodeInfo.x = startX;
 	currentMap->grid[startX][startY].nodeInfo.y = startY;
 	currentMap->grid[startX][startY].nodeInfo.g = 0;
-	int endX = 211;
-	int endY = 234;
 	currentMap->grid[endX][endY].nodeInfo.x = endX;
 	currentMap->grid[endX][endY].nodeInfo.y = endY;
 	Pathfind(&currentMap->grid[startX][startY].nodeInfo, &currentMap->grid[endX][endY].nodeInfo, currentMap);

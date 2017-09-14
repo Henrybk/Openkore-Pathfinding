@@ -1,0 +1,4 @@
+EXPORTS
+  boot_Mytest3
+  _boot_Mytest3 = boot_Mytest3
+  
